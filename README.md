@@ -97,37 +97,54 @@ decimal, and it's content contains corresponding [glyph](#glyph) definition.
 A 16-round [TEA](https://en.wikipedia.org/wiki/Tiny_Encryption_Algorithm) is
 used to encrypt/decrypt a 8-byte data block.
 
+A
+[CBC](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Cipher_block_chaining_(CBC))
+like algorithm is used to encrypt/decrypt bigger chunk of data.
+
+**Encryption**:<br>
+C<sub>i</sub> = (P<sub>i-1</sub> ⊕ C<sub>i-2</sub>) ⊕ E<sub>K</sub>(P<sub>i</sub> ⊕ C<sub>i-1</sub>)<br>
+C<sub>0</sub> = [0, 0, 0, 0, 0, 0, 0, 0]<br>
+P<sub>0</sub> = [0, 0, 0, 0, 0, 0, 0, 0]
+
+**Decryption**:<br>
+P<sub>i</sub> = C<sub>i-1</sub> ⊕ D<sub>K</sub>(C<sub>i</sub> ⊕ P<sub>i-1</sub>)<br>
+C<sub>0</sub> = [0, 0, 0, 0, 0, 0, 0, 0]<br>
+P<sub>0</sub> = [0, 0, 0, 0, 0, 0, 0, 0]
+
 #### Brief steps of encryption
-* Input: a plaintext buffer and a 128-bit key (`KEY`).
-* Create a new buffer(`PB`) which is 10 bytes larger than given plaintext buffer.
-* Calculate padding size(`PADDING_LENGTH`) for `PB` so it will contain multiple 8-byte blocks.
-* Append an indicator byte to `PB` (`0x20 | PADDING_LENGTH`).
-* Append `PADDING_LENGTH` random salt bytes to `PB`.
-* Append at most 2 more random salt bytes (make sure length of `PB` doesn't
-    exceed 8 bytes, only the first 8-byte block contains salt bytes).
-* Append plaintext to `PB`.
-* Append zero bytes to `PB` if there are space left.
-* Initialize a 8-byte all-zero block to hold last ciphertext block (`LCB`).
-* Initialize a 8-byte all-zero block to hold last plaintext block (`LPB`).
-* Initialize a 8-byte all-zero block to hold current plaintext block (`CPB`).
-* Split `PB` into several 8-byte blocks, for each block (`RPB`):
-    * Xor `RPB` and `LCB`, put result in `CPB`.
-    * Feed `CPB` and `KEY` to TEA(encrypt) and put result in `LCB`
-    * Xor `LCB` and `LPB`, append result to final ciphertext buffer.
+* Input
+    * Plaintext buffer (arbitrary size)
+    * Key buffer (128 bits) as `KEY`
+* Padding plaintext buffer
+    * Increase buffer size by 10 and pad it to be multiple of 8, after the new
+        buffer should look like this:
+        * Indicator (1 byte), contains `0x20 | PADDING_LENGTH`.
+        * Padding (0-7 byte(s)), contains random numbers in range [50-127].
+        * Prefix (2 bytes), contains random numbers in range [50-127].
+        * Original plaintext (N bytes)
+        * Postfix (7 bytes), contains zeros.
+* Initialize a 8-byte-long last plaintext block (`LPB`) to all zeros.
+* Initialize a 8-byte-long last ciphertext block (`LCB`) to all zeros.
+* Encrypt prepared buffer, for each 8-byte block (`PB`) in plaintext buffer:
+    * Xor `PB` and `LCB`,  put result in `CPB`.
+    * Feed `CPB` and `KEY` to TEA(encrypt), put result in `LCB`.
+    * Xor `LCB` and `LPB`, put result in `LCB`, append result to cipher buffer.
     * Copy `CPB` to `LPB`
 
 #### Brief steps of decryption
-* Input: a ciphertext buffer and a 128-bit key (`KEY`).
-* Size of given ciphertext buffer should be multiple of 8.
-* Initialize a 8-byte all-zero block to hold last ciphertext block (`LCB`).
-* Initialize a 8-byte all-zero block to hold last plaintext block (`LPB`).
-* Initialize a 8-byte all-zero block to hold current plaintext block (`CCB`).
-* Initialize an empty buffer (`PB`).
-* Split ciphertext buffer into several 8-byte blocks, for each block (`RCB`):
-    * Xor `RCB` and `LPB`, put result in `CCB`.
-    * Feed `CCB` and `KEY` to TEA(decrypt) and put result in `LPB`.
-    * Xor `LPB` and `LCB`, append result to `PB`.
-* Read indicator byte from `PB` and derive padding size(`PADDING_LENGTH`), skip
-    `PADDING_LENGTH` salt bytes and at most 2 more salt bytes (see corresponding
-    steps in [encryption](#brief-steps-of-encryption)), remaining bytes in `PB`
-    is the final decrypted plaintext.
+* Input
+    * Ciphertext buffer (arbitrary size)
+    * Key buffer (128 bits) as `KEY`
+* Initialize a 8-byte-long last plaintext block (`LPB`) to all zeros.
+* Initialize a 8-byte-long last ciphertext block (`LCB`) to all zeros.
+* Decrypt ciphertext buffer, for each 8-byte block (`CB`) in ciphertext buffer:
+    * Xor `CB` and `LPB`,  put result in `CCB`.
+    * Feed `CCB` and `KEY` to TEA(decrypt), put result in `LPB`.
+    * Xor `LPB` and `LCB`, append result to plaintext buffer.
+    * Copy `CB` to `LCB`
+* Extract final plaintext buffer
+    * Read the indicator byte, extract padding size (`PADDING_LENGTH`).
+    * Calculate final plaintext size (`PLAIN_LENGTH = CIPHER_LENGTH - PADDING_LENGTH - 10`).
+    * Skip `PADDING_LENGTH` padding bytes.
+    * Skip two bytes prefix.
+    * Extract `PLAIN_LENGTH` as final plaintext buffer.
