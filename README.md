@@ -43,21 +43,12 @@ file.
 | 5     | Korean       |
 
 #### Glyph
-| Name       | Type    | Size | Description                  |
-| --         | --      | :-:  | --                           |
-| Code       | Short   | 2    | Unicode char of the glyph    |
-| # Floats   | Integer | 4    | Number of following floats   |
-| Floats     | Float   | *    | Floats                       |
-| # Commands | Byte    | *    | Number of following commands |
-| Commands   | Byte    | *    | Byte commands                |
+| Name    | Type  | Size | Description               |
+| --      | --    | :-:  | --                        |
+| Code    | Short | 2    | Unicode char of the glyph |
+| Strokes | Block | *    | See [details](#strokes)   |
 
-Each glyph has an associated unicode number and several *strokes*. A *stroke*
-designates the path travelled between a pen down and pen up (a continuous mark
-on the paper); each *stroke* contains several *[points](#point)* and/or *[Bezier
-points](#bezier-point)*.
-
-By iterating and executing command in *Commands* buffer one could rebuild
-*strokes* from *Floats* buffer.
+Each glyph has an associated unicode number and several *[strokes](#strokes)*.
 
 ##### Command
 | Value | Definition                                            |
@@ -66,13 +57,37 @@ By iterating and executing command in *Commands* buffer one could rebuild
 | 1     | Add a [point](#point) to current stroke               |
 | 2     | Add a [Bezier point](#bezier-point) to current stroke |
 
-##### Point
+#### Zipped glyphs
+A ZIP archive for glyphs, each zipped file has a file name of glyph unicode in
+decimal, and it's content contains corresponding [glyph](#glyph) definition.
+
+### GAP file
+| Name            | Type              | Size | Description                                    |
+| --              | --                | :-:  | --                                             |
+| Version         | Integer           | 4    | GAP format version (version 1 so far)          |
+| UUID            | [String](#string) | *    | GAP file UUID                                  |
+| Name            | [String](#string) | *    | GAP name                                       |
+| Author          | [String](#string) | *    | GAP author name                                |
+| Description     | [String](#string) | *    | GAP description                                |
+| # Variables     | Integer           | 4    | Number of variables                            |
+| Variables       | Block             | *    | List of variables, see [details](#variable)    |
+| # Stroke groups | Integer           | 4    | Number of stroke groups                        |
+| Stroke groups   | Block             | *    | List of stroke groups, see [details](#strokes) |
+
+#### Variable
+| Name | Type              | Size | Description                    |
+| --   | --                | :-:  | --                             |
+| X    | Float             | 4    | X coordinate of variable       |
+| Y    | Float             | 4    | Y coordinate of variable point |
+| Name | [String](#string) | *    | Variable name                  |
+
+### Point
 | Name | Type  | Size | Description               |
 | --   | --    | :-:  | --                        |
 | X    | Float | 4    | X coordinate of the point |
 | Y    | Float | 4    | Y coordinate of the point |
 
-##### Bezier point
+### Bezier point
 | Name | Type  | Size | Description                              |
 | --   | --    | :-:  | --                                       |
 | CX1  | Float | 4    | X coordinate of the first control point  |
@@ -82,9 +97,20 @@ By iterating and executing command in *Commands* buffer one could rebuild
 | X    | Float | 4    | X coordinate of the point                |
 | Y    | Float | 4    | Y coordinate of the point                |
 
-#### Zipped glyphs
-A ZIP archive for glyphs, each zipped file has a file name of glyph unicode in
-decimal, and it's content contains corresponding [glyph](#glyph) definition.
+### Strokes
+| Name       | Type    | Size | Description                  |
+| --         | --      | :-:  | --                           |
+| # Floats   | Integer | 4    | Number of following floats   |
+| Floats     | Float   | *    | Floats                       |
+| # Commands | Byte    | *    | Number of following commands |
+| Commands   | Byte    | *    | Byte commands                |
+
+A *stroke* designates the path travelled between a pen down and pen up (a
+continuous mark on the paper); each *stroke* contains several *[points](#point)*
+and/or *[Bezier points](#bezier-point)*.
+
+By iterating and executing command in *Commands* buffer one could rebuild
+*strokes* from *floats* buffer.
 
 ### String
 | Name    | Type  | Size | Description                                 |
