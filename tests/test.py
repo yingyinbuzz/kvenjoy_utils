@@ -5,6 +5,7 @@ import kvenjoy.tea
 import kvenjoy.cipher
 import kvenjoy.io
 from kvenjoy.gfont import *
+from kvenjoy.gap import *
 
 class TestTEA(unittest.TestCase):
     plain = bytes([2, 0, 0, 9, 0, 2, 1, 6])
@@ -239,6 +240,128 @@ class TestGFont(unittest.TestCase):
         self.assertIsInstance(s.points[1], Point)
         self.assertEqual(s.points[1].x, -49.49999237060547)
         self.assertEqual(s.points[1].y, -75.5)
+
+class TestGAP(unittest.TestCase):
+    def test_load(self):
+        gap_content = bytes([
+            0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x63, 0x60, 0x60, 0x60, 0x64, 0x50,
+            0x49, 0x36, 0x36, 0x33, 0xb3, 0x48, 0x33, 0xb4, 0xd4, 0x35, 0x48, 0x4e, 0x34, 0xd1, 0x35, 0xb1,
+            0x34, 0xb2, 0xd4, 0x4d, 0x4c, 0x33, 0x33, 0xd0, 0xb5, 0xb4, 0x48, 0x35, 0x48, 0x49, 0xb2, 0x34,
+            0x33, 0x30, 0x35, 0x36, 0x66, 0x60, 0x29, 0x49, 0x2d, 0x2e, 0x61, 0x60, 0x73, 0x2c, 0x2d, 0xc9,
+            0xc8, 0x2f, 0x62, 0xe0, 0x76, 0x49, 0x2d, 0x4e, 0x2e, 0xca, 0x2c, 0x28, 0xc9, 0xcc, 0xcf, 0x63,
+            0x60, 0x60, 0x60, 0x3a, 0x34, 0x81, 0x81, 0xc1, 0xb1, 0x00, 0xc4, 0x0a, 0x33, 0x74, 0x8a, 0x00,
+            0xb2, 0x1b, 0xc0, 0x6c, 0x23, 0x20, 0xc9, 0x0c, 0xc4, 0x6c, 0x87, 0xbd, 0x18, 0x18, 0x0e, 0x3d,
+            0x02, 0x8a, 0xef, 0x00, 0xd2, 0x0f, 0x80, 0xf4, 0x01, 0x06, 0x86, 0xc3, 0x22, 0x0c, 0x0c, 0x60,
+            0x79, 0x46, 0x46, 0x20, 0xc5, 0x72, 0xe8, 0x0b, 0x50, 0x48, 0x12, 0x62, 0x8c, 0x53, 0x01, 0x58,
+            0x8a, 0x89, 0x01, 0x22, 0x73, 0x8f, 0x81, 0xc1, 0x99, 0x15, 0x28, 0x3a, 0x0b, 0xa8, 0x79, 0x17,
+            0x4c, 0x06, 0x00, 0x4e, 0x8c, 0x95, 0xb8, 0xbc, 0x00, 0x00, 0x00])
+        version = 1
+        uuid = 'c3668f19-0ca4-4929-af60-98e0db960533'
+        name = 'test'
+        author = 'Author'
+        description = 'Description'
+
+        stm = io.BytesIO(gap_content)
+        gap = Gap.load(stm)
+
+        self.assertEqual(gap.version, version)
+        self.assertEqual(gap.uuid, uuid)
+        self.assertEqual(gap.name, name)
+        self.assertEqual(gap.author, author)
+        self.assertEqual(gap.description, description)
+
+        self.assertEqual(len(gap.variables), 2)
+        v = gap.variables[0]
+        self.assertEqual(v.x, -72.0)
+        self.assertEqual(v.y, 15.0)
+        self.assertEqual(v.name, 'V1')
+        v = gap.variables[1]
+        self.assertEqual(v.x, 54.0)
+        self.assertEqual(v.y, 16.0)
+        self.assertEqual(v.name, 'V2')
+
+        self.assertEqual(len(gap.stroke_groups), 3)
+        sg = gap.stroke_groups[0]
+        self.assertEqual(len(sg), 1)
+        self.assertEqual(len(sg[0].points), 3)
+        self.assertEqual(sg[0].points[0].x, -202.0)
+        self.assertEqual(sg[0].points[0].y, -113.0)
+        self.assertEqual(sg[0].points[1].x, 23.0)
+        self.assertEqual(sg[0].points[1].y, -112.0)
+        self.assertEqual(sg[0].points[2].x, 24.0)
+        self.assertEqual(sg[0].points[2].y, -148.0)
+        sg = gap.stroke_groups[1]
+        self.assertEqual(len(sg), 1)
+        self.assertEqual(len(sg[0].points), 2)
+        self.assertEqual(sg[0].points[0].x, -122.0)
+        self.assertEqual(sg[0].points[0].y, -153.0)
+        self.assertEqual(sg[0].points[1].x, 15.0)
+        self.assertEqual(sg[0].points[1].y, 60.0)
+        sg = gap.stroke_groups[2]
+        self.assertEqual(len(sg), 1)
+        self.assertEqual(len(sg[0].points), 2)
+        self.assertEqual(sg[0].points[0].x, -111.0)
+        self.assertEqual(sg[0].points[0].y, 133.0)
+        self.assertEqual(sg[0].points[1].x, 77.0)
+        self.assertEqual(sg[0].points[1].y, -93.0)
+
+    def test_save(self):
+        version = 1
+        uuid = 'c3668f19-0ca4-4929-af60-98e0db960533'
+        name = 'test'
+        author = 'Author'
+        description = 'Description'
+        variables = [Variable(-72.0, 15.0, 'V1'), Variable(54.0, 16.0, 'V2')]
+        stroke_groups = [
+            [Stroke([Point(-202.0, -113.0), Point(23.0, -112.0), Point(24.0, -148.0)])],
+            [Stroke([Point(-122.0, -153.0), Point(15.0, 60.0)])],
+            [Stroke([Point(-111.0, 133.0), Point(77.0, -93.0)])]
+        ]
+        gap = Gap(version, uuid, name, author, description, variables, stroke_groups)
+        stm = io.BytesIO()
+        Gap.save(stm, gap)
+        stm.seek(0)
+        gap = Gap.load(stm)
+        self.assertEqual(gap.version, version)
+        self.assertEqual(gap.uuid, uuid)
+        self.assertEqual(gap.name, name)
+        self.assertEqual(gap.author, author)
+        self.assertEqual(gap.description, description)
+
+        self.assertEqual(len(gap.variables), 2)
+        v = gap.variables[0]
+        self.assertEqual(v.x, -72.0)
+        self.assertEqual(v.y, 15.0)
+        self.assertEqual(v.name, 'V1')
+        v = gap.variables[1]
+        self.assertEqual(v.x, 54.0)
+        self.assertEqual(v.y, 16.0)
+        self.assertEqual(v.name, 'V2')
+
+        self.assertEqual(len(gap.stroke_groups), 3)
+        sg = gap.stroke_groups[0]
+        self.assertEqual(len(sg), 1)
+        self.assertEqual(len(sg[0].points), 3)
+        self.assertEqual(sg[0].points[0].x, -202.0)
+        self.assertEqual(sg[0].points[0].y, -113.0)
+        self.assertEqual(sg[0].points[1].x, 23.0)
+        self.assertEqual(sg[0].points[1].y, -112.0)
+        self.assertEqual(sg[0].points[2].x, 24.0)
+        self.assertEqual(sg[0].points[2].y, -148.0)
+        sg = gap.stroke_groups[1]
+        self.assertEqual(len(sg), 1)
+        self.assertEqual(len(sg[0].points), 2)
+        self.assertEqual(sg[0].points[0].x, -122.0)
+        self.assertEqual(sg[0].points[0].y, -153.0)
+        self.assertEqual(sg[0].points[1].x, 15.0)
+        self.assertEqual(sg[0].points[1].y, 60.0)
+        sg = gap.stroke_groups[2]
+        self.assertEqual(len(sg), 1)
+        self.assertEqual(len(sg[0].points), 2)
+        self.assertEqual(sg[0].points[0].x, -111.0)
+        self.assertEqual(sg[0].points[0].y, 133.0)
+        self.assertEqual(sg[0].points[1].x, 77.0)
+        self.assertEqual(sg[0].points[1].y, -93.0)
 
 if __name__ == '__main__':
     unittest.main(),

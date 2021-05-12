@@ -42,40 +42,11 @@ class Glyph:
         stm   -- The output stream.
         glyph -- The glyph to be written.
         """
-
-        # Rebuild coordinate and command buffer
-        floats = []
-        cmds = []
-        for stroke in glyph.strokes:
-            cmds.append(0)
-            floats.append(stroke.points[0].x)
-            floats.append(stroke.points[0].y)
-            for p in stroke.points[1:]:
-                if isinstance(p, Point):
-                    cmds.append(1)
-                    floats.append(p.x)
-                    floats.append(p.y)
-                elif isinstance(p, BezierPoint):
-                    cmds.append(2)
-                    floats.append(p.cx1)
-                    floats.append(p.cy1)
-                    floats.append(p.cx2)
-                    floats.append(p.cy2)
-                    floats.append(p.x)
-                    floats.append(p.y)
-                else:
-                    raise Exception('Unknown point type "{}"'.format(type(p).__name__))
-
         # Write glyph character code
         write_short(stm, glyph.code)
 
-        # Write coordinates buffer
-        write_int(stm, len(floats))
-        for f in floats:
-            write_float(stm, f)
-        write_int(stm, len(cmds))
-        for c in cmds:
-            write_byte(stm, c)
+        # Write glyphs
+        Stroke.save_list(stm, glyph.strokes)
 
 class Font:
     """Represents a font.
