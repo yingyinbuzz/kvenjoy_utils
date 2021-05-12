@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/yingyinbuzz/kvenjoy_utils.svg?branch=main)](https://travis-ci.com/yingyinbuzz/kvenjoy_utils)
+
 # Kvenjoy GFONT/GAP utilities
 
 ## File formats
