@@ -27,7 +27,7 @@ file.
 | Author      | [String](#string) | *    | Font author name                                    |
 | Description | [String](#string) | *    | Font description                                    |
 | Glyph size  | Integer           | 4    | Size boundary of individual glyphs?                 |
-| # Glyphs?   | Integer           | 4    | ?                                                   |
+| # Glyphs    | Integer           | 4    | Number of zipped glyphs                             |
 | Password    | [String](#string) | *    | Font password (requires format version >=2)         |
 | ?           | [String](#string) | *    | Always empty (requires format version >=4)          |
 | UUID        | [String](#string) | *    | Font UUID (requires format version >=7)             |
