@@ -62,6 +62,9 @@ A ZIP archive for glyphs, each zipped file has a file name of glyph unicode in
 decimal, and it's content contains corresponding [glyph](#glyph) definition.
 
 ### GAP file
+A GAP is a [GZipped](https://en.wikipedia.org/wiki/Gzip) file that has following
+structure.
+
 | Name            | Type              | Size | Description                                    |
 | --              | --                | :-:  | --                                             |
 | Version         | Integer           | 4    | GAP format version (version 1 so far)          |
