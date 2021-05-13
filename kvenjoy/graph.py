@@ -8,6 +8,11 @@ class Point:
         self.x = float(x)
         self.y = float(y)
 
+    def bounding_box(self):
+        """Calculate bounding box that could just hold this point
+        """
+        return (self.x, self.y, self.x, self.y)
+
 class BezierPoint:
     """A Bezier point with two extra control points"""
 
@@ -18,6 +23,15 @@ class BezierPoint:
         self.cy2 = float(cy2)
         self.x = float(x)
         self.y = float(y)
+
+    def bounding_box(self):
+        """Calculate bounding box that could just hold this Bezier point
+        """
+        return (min(self.cx1, self.cx2, self.x),
+                min(self.cy1, self.cy2, self.y),
+                max(self.cx1, self.cx2, self.x),
+                max(self.cy1, self.cy2, self.y))
+
 
 class Stroke:
     """Represents a continuous mark (path).

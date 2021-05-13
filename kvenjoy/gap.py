@@ -51,6 +51,36 @@ class Gap:
         self.variables = variables
         self.stroke_groups = stroke_groups
 
+    def bounding_box(self):
+        """Calculate bounding box that could just hold this gap
+
+        Arguments:
+        return -- (x0, y0, x1, y1) Left top and right bottom coordinates of the bounding box.
+        """
+        (x0, y0, x1, y1) = (None, None, None, None)
+        for v in self.variables:
+                if x0 is None or x0 > v.x:
+                    x0 = v.x
+                if y0 is None or y0 > v.y:
+                    y0 = v.y
+                if x1 is None or x1 < v.x:
+                    x1 = v.x
+                if y1 is None or y1 < v.y:
+                    y1 = v.y
+        for sg in self.stroke_groups:
+            for s in sg:
+                for p in s.points:
+                    (px0, py0, px1, py1) = p.bounding_box()
+                    if x0 is None or x0 > px0:
+                        x0 = px0
+                    if y0 is None or y0 > py0:
+                        y0 = py0
+                    if x1 is None or x1 < px1:
+                        x1 = px1
+                    if y1 is None or y1 < py1:
+                        y1 = py1
+        return (x0, y0, x1, y1)
+
     @staticmethod
     def load(stm):
         """Construct a GAP object from given input stream.
