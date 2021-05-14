@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
+import re
+import json
 from kvenjoy.gfont import *
 from kvenjoy.gap import *
+from kvenjoy.converter import *
 
 def format_point(p):
     if isinstance(p, Point):
@@ -49,9 +52,7 @@ def dump_gap(fn, verbose):
                 for s in sg:
                     print('\t\t{}'.format(', '.join([format_point(p) for p in s.points])))
 
-def export_gap(fn, fmt, ofn):
-    with open(fn, 'rb') as f:
-        gap = Gap.load(f)
+def export_gap_to_svg(gap, ofn):
     with open(ofn, 'w') as f:
         (x0, y0, x1, y1) = gap.bounding_box()
         px = (x1 - x0) / 10
@@ -75,10 +76,72 @@ def export_gap(fn, fmt, ofn):
                 print('" stroke="black" fill="transparent"/>', file=f)
         print('</svg>', file=f)
 
-def export_gfont(fn):
-    raise Exception('GFONT export has not been supported yet.')
+def export_gap_to_json(gap, ofn):
+    jo = gap_to_json(gap)
+    with open(ofn, 'w') as f:
+        f.write(json.dumps(jo, indent=4))
+
+def export_gap(fn, fmt, ofn):
+    with open(fn, 'rb') as f:
+        gap = Gap.load(f)
+    if fmt == 'svg':
+        export_gap_to_svg(gap, ofn)
+    elif fmt == 'json':
+        export_gap_to_json(gap, ofn)
+
+def export_gfont_to_json(font, ofn):
+    jo = gfont_to_json(font)
+    with open(ofn, 'w') as f:
+        f.write(json.dumps(jo, indent=4))
+
+def export_gfont(fn, fmt, ofn):
+    with open(fn, 'rb') as f:
+        font = Font.load(f)
+    if fmt == 'svg':
+        raise Exception('GFONT to SVG export has not been supported yet.')
+    elif fmt == 'json':
+        export_gfont_to_json(font, ofn)
+
+def import_gap_from_svg(ifn):
+    raise Exception('Import GAP from SVG not supported yet')
+
+def import_gap_from_json(ifn):
+    with open(ifn) as f:
+        jo = json.load(f)
+    return gap_from_json(jo)
+
+def import_gap(fn, fmt, ifn):
+    if fmt == 'svg':
+        gap = import_gap_from_svg(ifn)
+    elif fmt == 'json':
+        gap = import_gap_from_json(ifn)
+    with open(fn, 'wb') as f:
+        Gap.save(f, gap)
+
+def import_gfont_from_svg(ifn):
+    raise Exception('Import GFONT from SVG not supported yet')
+
+def import_gfont_from_json(ifn):
+    with open(ifn) as f:
+        jo = json.load(f)
+    return gfont_from_json(jo)
+
+def import_gfont(fn, fmt, ifn):
+    if fmt == 'svg':
+        font = import_gfont_from_svg(ifn)
+    elif fmt == 'json':
+        font = import_gfont_from_json(ifn)
+    with open(fn, 'wb') as f:
+        Font.save(f, font)
 
 def file_type(fn):
+    # Check extension name first
+    if re.search(r'\.gap$', fn):
+        return 'gap'
+    if re.search(r'\.gfont$', fn):
+        return 'gfont'
+
+    # Check file content
     with open(fn, 'rb') as f:
         bs = f.read(4)
         (magic,) = struct.unpack_from('>H', bs, 0)
@@ -93,9 +156,11 @@ if __name__ == '__main__':
     p.add_argument('-v', '--verbose', action='store_true',
                     help='Show verbose information')
     sp = p.add_subparsers(dest='command')
+
     p_dump = sp.add_parser('dump', description='Dump GFONT/GAP files(s)')
     p_dump.add_argument('gfiles', metavar='GFILE', type=str, nargs='+',
                         help='A GFONT/GAP file')
+
     p_export = sp.add_parser('export', description='Export a GFONT/GAP file')
     p_export.add_argument('-f', '--format', choices=['svg', 'json'],
                           help='Ouput format')
@@ -103,6 +168,15 @@ if __name__ == '__main__':
                           help='Ouput file')
     p_export.add_argument('gfile', metavar='GFILE', type=str,
                           help='A GFONT/GAP file')
+
+    p_import = sp.add_parser('import', description='Import a GFONT/GAP file')
+    p_import.add_argument('-f', '--format', choices=['svg', 'json'],
+                          help='Input format')
+    p_import.add_argument('-i', '--input', metavar='INPUT', required=True,
+                          help='Input file')
+    p_import.add_argument('gfile', metavar='GFILE', type=str,
+                          help='A GFONT/GAP file')
+
     args = p.parse_args()
 
     if args.command == 'dump':
@@ -116,4 +190,9 @@ if __name__ == '__main__':
         if file_type(args.gfile) == 'gap':
             export_gap(args.gfile, args.format, args.output)
         else:
-            export_gfont(args.gfile)
+            export_gfont(args.gfile, args.format, args.output)
+    elif args.command == 'import':
+        if file_type(args.gfile) == 'gap':
+            import_gap(args.gfile, args.format, args.input)
+        else:
+            import_gfont(args.gfile, args.format, args.input)
