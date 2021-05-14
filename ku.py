@@ -49,10 +49,10 @@ def dump_gap(fn, verbose):
                 for s in sg:
                     print('\t\t{}'.format(', '.join([format_point(p) for p in s.points])))
 
-def export_gap(fn):
+def export_gap(fn, fmt, ofn):
     with open(fn, 'rb') as f:
         gap = Gap.load(f)
-    with open('{}.svg'.format(fn), 'w') as f:
+    with open(ofn, 'w') as f:
         (x0, y0, x1, y1) = gap.bounding_box()
         px = (x1 - x0) / 10
         py = (y1 - y0) / 20
@@ -90,23 +90,30 @@ def file_type(fn):
 if __name__ == '__main__':
     import argparse
     p = argparse.ArgumentParser(description='Utility to manipulate Kvenjoy GFONT/GAP file(s)')
-    p.add_argument('action', choices=['dump', 'export'],
-                    help='Action on GFONT/GAP file(s)')
-    p.add_argument('gfiles', metavar='GFILE', type=str, nargs='+',
-                    help='A GFONT/GAP file')
     p.add_argument('-v', '--verbose', action='store_true',
                     help='Show verbose information')
+    sp = p.add_subparsers(dest='command')
+    p_dump = sp.add_parser('dump', description='Dump GFONT/GAP files(s)')
+    p_dump.add_argument('gfiles', metavar='GFILE', type=str, nargs='+',
+                        help='A GFONT/GAP file')
+    p_export = sp.add_parser('export', description='Export a GFONT/GAP file')
+    p_export.add_argument('-f', '--format', choices=['svg', 'json'],
+                          help='Ouput format')
+    p_export.add_argument('-o', '--output', metavar='OUTPUT', required=True,
+                          help='Ouput file')
+    p_export.add_argument('gfile', metavar='GFILE', type=str,
+                          help='A GFONT/GAP file')
     args = p.parse_args()
-    if args.action == 'dump':
+
+    if args.command == 'dump':
         for fn in args.gfiles:
             if file_type(fn) == 'gap':
                 dump_gap(fn, args.verbose)
             else:
                 dump_gfont(fn, args.verbose)
             print()
-    elif args.action == 'export':
-        for fn in args.gfiles:
-            if file_type(fn) == 'gap':
-                export_gap(fn)
-            else:
-                export_gfont(fn)
+    elif args.command == 'export':
+        if file_type(args.gfile) == 'gap':
+            export_gap(args.gfile, args.format, args.output)
+        else:
+            export_gfont(args.gfile)
