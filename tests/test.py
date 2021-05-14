@@ -6,6 +6,7 @@ import kvenjoy.cipher
 import kvenjoy.io
 from kvenjoy.gfont import *
 from kvenjoy.gap import *
+from kvenjoy.converter import *
 
 class TestTEA(unittest.TestCase):
     plain = bytes([2, 0, 0, 9, 0, 2, 1, 6])
@@ -362,6 +363,43 @@ class TestGAP(unittest.TestCase):
         self.assertEqual(sg[0].points[0].y, 133.0)
         self.assertEqual(sg[0].points[1].x, 77.0)
         self.assertEqual(sg[0].points[1].y, -93.0)
+
+class TestConverter(unittest.TestCase):
+    def test_gap_to_json(self):
+        version = 1
+        uuid = 'c3668f19-0ca4-4929-af60-98e0db960533'
+        name = 'test'
+        author = 'Author'
+        description = 'Description'
+        variables = [Variable(-10.0, -11, 'V1'), Variable(-20, -21, 'V2')]
+        stroke_groups = [
+            [Stroke([Point(10, 11), Point(20, 21), Point(30, 31)])],
+            [Stroke([Point(100, 110), BezierPoint(110, 111, 120, 121, 130, 131)])]
+        ]
+        gap = Gap(version, uuid, name, author, description, variables, stroke_groups)
+        jo = gap_to_json(gap)
+        self.assertEqual(jo['version'], gap.version)
+        self.assertEqual(jo['name'], gap.name)
+        self.assertEqual(jo['uuid'], gap.uuid)
+        self.assertEqual(jo['author'], gap.author)
+        self.assertEqual(jo['description'], gap.description)
+        self.assertEqual(len(jo['variables']), len(gap.variables))
+        for (jv, v) in zip(jo['variables'], gap.variables):
+            self.assertEqual(jv['x'], v.x)
+            self.assertEqual(jv['y'], v.y)
+            self.assertEqual(jv['name'], v.name)
+        self.assertEqual(len(jo['stroke_groups']), len(gap.stroke_groups))
+        for (jsg, sg) in zip(jo['stroke_groups'], gap.stroke_groups):
+            self.assertEqual(len(jsg), len(sg))
+            for (js, s) in zip(jsg, sg):
+                self.assertEqual(len(js['points']), len(s.points))
+                for (jp, p) in zip(js['points'], s.points):
+                    if isinstance(p, Point):
+                        self.assertEqual(jp, [p.x, p.y])
+                    elif isinstance(p, BezierPoint):
+                        self.assertEqual(jp, [p.cx1, p.cy1, p.cx2, p.cy2, p.x, p.y])
+                    else:
+                        raise Exception('Unknown type "{}"'.format(type(p).__name__))
 
 if __name__ == '__main__':
     unittest.main(),
