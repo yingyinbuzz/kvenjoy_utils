@@ -35,3 +35,25 @@ def gap_to_json(gap):
     o['variables'] = [variable_to_json(v) for v in gap.variables]
     o['stroke_groups'] = [[stroke_to_json(s) for s in sg] for sg in gap.stroke_groups]
     return o
+
+def glyph_to_json(g):
+    o = {}
+    o['code'] = g.code
+    o['strokes'] = [stroke_to_json(s) for s in g.strokes]
+    return o
+
+def gfont_to_json(font):
+    """Converts a Gfont object to dict/json struct"""
+    o = {}
+    o['version'] = font.version
+    o['vendor'] = font.vendor
+    o['type'] = font.type
+    o['name'] = font.name
+    o['author'] = font.author
+    o['description'] = font.description
+    o['boundary'] = font.boundary
+    o['password'] = font.password
+    o['unknown'] = font.unknown
+    o['uuid'] = font.uuid
+    o['glyphs'] = [glyph_to_json(g) for g in font.glyphs]
+    return o

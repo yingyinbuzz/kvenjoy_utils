@@ -401,5 +401,45 @@ class TestConverter(unittest.TestCase):
                     else:
                         raise Exception('Unknown type "{}"'.format(type(p).__name__))
 
+    def test_font_to_json(self):
+        version = 7
+        vendor = 'kvenjoy'
+        type = 1
+        name = 'Test'
+        author = 'Author'
+        description = 'Description'
+        boundary = 300
+        password = 'pASSWORD'
+        unknown = b''
+        uuid = '379865e6-84d8-4310-b227-45249f5afb44'
+        glyphs = [
+            Glyph(0x41, [Stroke([Point(10, 11), Point(20, 21), Point(30, 31)])]),
+            Glyph(0x42, [Stroke([Point(100, 110), BezierPoint(110, 111, 120, 121, 130, 131)])])
+        ]
+        font = Font(version, vendor, type, name, author, description, boundary, password, unknown, uuid, glyphs)
+        jo = gfont_to_json(font)
+        self.assertEqual(jo['version'], font.version)
+        self.assertEqual(jo['vendor'], font.vendor)
+        self.assertEqual(jo['type'], font.type)
+        self.assertEqual(jo['name'], font.name)
+        self.assertEqual(jo['author'], font.author)
+        self.assertEqual(jo['description'], font.description)
+        self.assertEqual(jo['boundary'], font.boundary)
+        self.assertEqual(jo['password'], font.password)
+        self.assertEqual(jo['unknown'], font.unknown)
+        self.assertEqual(jo['uuid'], font.uuid)
+        self.assertEqual(len(jo['glyphs']), len(font.glyphs))
+        for (jg, g) in zip(jo['glyphs'], font.glyphs):
+            self.assertEqual(jg['code'], g.code)
+            for (js, s) in zip(jg['strokes'], g.strokes):
+                self.assertEqual(len(js['points']), len(s.points))
+                for (jp, p) in zip(js['points'], s.points):
+                    if isinstance(p, Point):
+                        self.assertEqual(jp, [p.x, p.y])
+                    elif isinstance(p, BezierPoint):
+                        self.assertEqual(jp, [p.cx1, p.cy1, p.cx2, p.cy2, p.x, p.y])
+                    else:
+                        raise Exception('Unknown type "{}"'.format(type(p).__name__))
+
 if __name__ == '__main__':
     unittest.main(),
