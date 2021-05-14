@@ -401,6 +401,46 @@ class TestConverter(unittest.TestCase):
                     else:
                         raise Exception('Unknown type "{}"'.format(type(p).__name__))
 
+    def test_gap_from_json(self):
+        jo = {
+            'version': 1,
+            'name': 'test',
+            'uuid': 'c3668f19-0ca4-4929-af60-98e0db960533',
+            'author': 'Author',
+            'description': 'Description',
+            'variables': [
+                {'x': -10.0, 'y': -11, 'name': 'V1'},
+                {'x': -20, 'y': -21, 'name': 'V2'}
+            ],
+            'stroke_groups': [
+                [{'points': [[10.0, 11.0], [20.0, 21.0], [30.0, 31.0]]}],
+                [{'points': [[100.0, 110.0], [110.0, 111.0, 120.0, 121.0, 130.0, 131.0]]}]
+            ]
+        }
+        gap = gap_from_json(jo)
+        self.assertEqual(gap.version, jo['version'])
+        self.assertEqual(gap.name, jo['name'])
+        self.assertEqual(gap.uuid, jo['uuid'])
+        self.assertEqual(gap.author, jo['author'])
+        self.assertEqual(gap.description, jo['description'])
+        self.assertEqual(len(gap.variables), len(jo['variables']))
+        for (v, jv) in zip(gap.variables, jo['variables']):
+            self.assertEqual(v.x, jv['x'])
+            self.assertEqual(v.y, jv['y'])
+            self.assertEqual(v.name, jv['name'])
+        self.assertEqual(len(gap.stroke_groups), len(jo['stroke_groups']))
+        for (sg, jsg) in zip(gap.stroke_groups, jo['stroke_groups']):
+            self.assertEqual(len(sg), len(jsg))
+            for (s, js) in zip(sg, jsg):
+                self.assertEqual(len(s.points), len(js['points']))
+                for (p, jp) in zip(s.points, js['points']):
+                    if isinstance(p, Point):
+                        self.assertEqual([p.x, p.y], jp)
+                    elif isinstance(p, BezierPoint):
+                        self.assertEqual([p.cx1, p.cy1, p.cx2, p.cy2, p.x, p.y], jp)
+                    else:
+                        raise Exception('Unknown type "{}"'.format(type(p).__name__))
+
     def test_font_to_json(self):
         version = 7
         vendor = 'kvenjoy'
@@ -431,6 +471,7 @@ class TestConverter(unittest.TestCase):
         self.assertEqual(len(jo['glyphs']), len(font.glyphs))
         for (jg, g) in zip(jo['glyphs'], font.glyphs):
             self.assertEqual(jg['code'], g.code)
+            self.assertEqual(len(jg['strokes']), len(g.strokes))
             for (js, s) in zip(jg['strokes'], g.strokes):
                 self.assertEqual(len(js['points']), len(s.points))
                 for (jp, p) in zip(js['points'], s.points):
@@ -438,6 +479,48 @@ class TestConverter(unittest.TestCase):
                         self.assertEqual(jp, [p.x, p.y])
                     elif isinstance(p, BezierPoint):
                         self.assertEqual(jp, [p.cx1, p.cy1, p.cx2, p.cy2, p.x, p.y])
+                    else:
+                        raise Exception('Unknown type "{}"'.format(type(p).__name__))
+
+    def test_font_from_json(self):
+        jo = {
+            'version': 7,
+            'vendor': 'kvenjoy',
+            'type': 1,
+            'name': 'Test',
+            'author': 'Author',
+            'description': 'Description',
+            'boundary': 300,
+            'password': 'pASSWORD',
+            'unknown': [],
+            'uuid': '379865e6-84d8-4310-b227-45249f5afb44',
+            'glyphs': [
+                {'code': 65, 'strokes': [{'points': [[10.0, 11.0], [20.0, 21.0], [30.0, 31.0]]}]},
+                {'code': 66, 'strokes': [{'points': [[100.0, 110.0], [110.0, 111.0, 120.0, 121.0, 130.0, 131.0]]}]}
+            ]
+        }
+        font = gfont_from_json(jo)
+        self.assertEqual(font.version, jo['version'])
+        self.assertEqual(font.vendor, jo['vendor'])
+        self.assertEqual(font.type, jo['type'])
+        self.assertEqual(font.name, jo['name'])
+        self.assertEqual(font.author, jo['author'])
+        self.assertEqual(font.description, jo['description'])
+        self.assertEqual(font.boundary, jo['boundary'])
+        self.assertEqual(font.password, jo['password'])
+        self.assertEqual([x for x in font.unknown], jo['unknown'])
+        self.assertEqual(font.uuid, jo['uuid'])
+        self.assertEqual(len(font.glyphs), len(jo['glyphs']))
+        for (g, jg) in zip(font.glyphs, jo['glyphs']):
+            self.assertEqual(g.code, jg['code'])
+            self.assertEqual(len(g.strokes), len(jg['strokes']))
+            for (s, js) in zip(g.strokes, jg['strokes']):
+                self.assertEqual(len(s.points), len(js['points']))
+                for (p, jp) in zip(s.points, js['points']):
+                    if isinstance(p, Point):
+                        self.assertEqual([p.x, p.y], jp)
+                    elif isinstance(p, BezierPoint):
+                        self.assertEqual([p.cx1, p.cy1, p.cx2, p.cy2, p.x, p.y], jp)
                     else:
                         raise Exception('Unknown type "{}"'.format(type(p).__name__))
 
