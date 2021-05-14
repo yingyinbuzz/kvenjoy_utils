@@ -426,7 +426,7 @@ class TestConverter(unittest.TestCase):
         self.assertEqual(jo['description'], font.description)
         self.assertEqual(jo['boundary'], font.boundary)
         self.assertEqual(jo['password'], font.password)
-        self.assertEqual(jo['unknown'], font.unknown)
+        self.assertEqual(jo['unknown'], [x for x in font.unknown])
         self.assertEqual(jo['uuid'], font.uuid)
         self.assertEqual(len(jo['glyphs']), len(font.glyphs))
         for (jg, g) in zip(jo['glyphs'], font.glyphs):

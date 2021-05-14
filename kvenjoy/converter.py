@@ -53,7 +53,7 @@ def gfont_to_json(font):
     o['description'] = font.description
     o['boundary'] = font.boundary
     o['password'] = font.password
-    o['unknown'] = font.unknown
+    o['unknown'] = [b for b in font.unknown]
     o['uuid'] = font.uuid
     o['glyphs'] = [glyph_to_json(g) for g in font.glyphs]
     return o
