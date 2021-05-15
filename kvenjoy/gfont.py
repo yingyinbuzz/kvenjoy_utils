@@ -155,10 +155,9 @@ class Font:
 
         # Write some non-zipped glyphs
         # TODO: Find out what exactly these non-zipped glyphs are for.
-        num_glyph = min(30, len(font.glyphs))
-        write_int(stm, num_glyph)
-        for i in range(num_glyph):
-            Glyph.save(stm, font.glyphs[i])
+        write_int(stm, min(30, len(font.glyphs)))
+        for g in font.glyphs:
+            Glyph.save(stm, g)
 
         # Write zipped glyphs
         zstm = io.BytesIO()

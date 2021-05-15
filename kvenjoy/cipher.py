@@ -23,9 +23,7 @@ def encrypt(plain, key):
         padding_size = 8 - padding_size
     plain_size += padding_size
     plain_buf.append(0x20 | padding_size)
-    plain_buf.extend([_random() for i in range(padding_size)])
-    for i in range(2):
-        plain_buf.append(_random())
+    plain_buf.extend([_random() for i in range(padding_size + 2)])
 
     # Append plaintext
     plain_buf.extend(plain)
@@ -75,7 +73,7 @@ def _random():
 
 def _xor(bs1, bs2, n):
     """Return exclusive or of two given byte arrays"""
-    bs = bytearray(n)
-    for i in range(n):
-        bs[i] = bs1[i] ^ bs2[i]
+    bs = bytearray()
+    for (b1, b2) in zip(bs1, bs2):
+        bs.append(b1 ^ b2)
     return bs
