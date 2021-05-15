@@ -2,6 +2,15 @@
 
 # Kvenjoy GFONT/GAP utilities
 
+## Kvenjoy utility script
+
+It has following feature(s):
+* Dump contents of given GAP/GFONT file(s)
+* Export a GAP/GFONT file to a JSON/SVG file.
+* Create a GAP/GFONT file from a JSON file.
+
+For detailed information please see help output of `ku.py`.
+
 ## File formats
 By default all data fields below are in *big endian* byte order unless specified
 individually.
