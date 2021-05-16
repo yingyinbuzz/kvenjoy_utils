@@ -1,0 +1,14 @@
+BoxLayout:
+    orientation: 'vertical'
+    GridLayout:
+        cols:2
+        size_hint_y: None
+        Label:
+            text: 'Threshold {:.0f}'.format(threshold.value)
+            size_hint_x: None
+        Slider:
+            id: threshold
+            min: 0
+            max: 255
+            value: app.threshold
+    Image:
