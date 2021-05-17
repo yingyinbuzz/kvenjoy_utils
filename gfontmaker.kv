@@ -14,8 +14,24 @@ RootWidget:
             on_value: root.threshold = args[1]
     ScrollView:
         Image:
+            id: img
             source: 'English_Letters.jpg'
             size: self.texture_size
             size_hint_x: None
             size_hint_y: None
             on_touch_down: root.on_image_clicked(*args)
+
+<LoadDialog>:
+    BoxLayout:
+        orientation: 'vertical'
+        FileChooserIconView:
+            id: file_chooser
+        BoxLayout:
+            height: 30
+            size_hint_y: None
+            Button:
+                text: 'Cancel'
+                on_release: root.cancel()
+            Button:
+                text: 'Load'
+                on_release: root.load(file_chooser.path, file_chooser.selection)
