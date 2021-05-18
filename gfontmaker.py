@@ -6,6 +6,7 @@ from kivy.properties import NumericProperty, ObjectProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.popup import Popup
+from kivy.graphics import Color, Rectangle
 
 class LoadDialog(FloatLayout):
     load = ObjectProperty(None)
@@ -17,6 +18,12 @@ class RootWidget(BoxLayout):
 
     def on_threshold(self, *args):
         print('threshold changed to {}'.format(self.threshold))
+        img = self.ids.img
+        size = img.texture_size
+        img.canvas.after.clear()
+        with img.canvas.after:
+            Color(1, 0, 0)
+            Rectangle(pos=(self.threshold * 5, size[1] - self.threshold * 5 - 100), size=(100, 100))
 
     def load(self, path, filenames):
         print('Load {} {}'.format(path, filenames))
