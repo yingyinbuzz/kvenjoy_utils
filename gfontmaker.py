@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
 import os
+import io
+from PIL import Image
+from kivy.core.image import Image as CoreImage
 from kivy.app import App
 from kivy.properties import NumericProperty, ObjectProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
@@ -27,9 +30,14 @@ class RootWidget(BoxLayout):
 
     def load(self, path, filenames):
         print('Load {} {}'.format(path, filenames))
-        self.last_path = path
-        self.ids.img.source = filenames[0]
         self.dismiss_popup()
+        self.last_path = path
+        img = Image.open(filenames[0])
+        data = io.BytesIO()
+        img.save(data, format='png')
+        data.seek(0)
+        core_img = CoreImage(data, ext='png')
+        self.ids.img.texture = core_img.texture
 
     def dismiss_popup(self):
         self._popup.dismiss()
