@@ -2,6 +2,8 @@
 
 import os
 import io
+import threading
+from functools import partial
 from PIL import Image
 from kivy.core.image import Image as CoreImage
 from kivy.app import App
@@ -10,6 +12,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.popup import Popup
 from kivy.graphics import Color, Rectangle
+from kivy.clock import Clock
 
 class LoadDialog(FloatLayout):
     load = ObjectProperty(None)
@@ -28,16 +31,25 @@ class RootWidget(BoxLayout):
             Color(1, 0, 0)
             Rectangle(pos=(self.threshold * 5, size[1] - self.threshold * 5 - 100), size=(100, 100))
 
-    def load(self, path, filenames):
-        print('Load {} {}'.format(path, filenames))
-        self.dismiss_popup()
-        self.last_path = path
-        img = Image.open(filenames[0])
+    def load_image(self, filename):
+        print('Load begin')
+        img = Image.open(filename)
         data = io.BytesIO()
         img.save(data, format='png')
         data.seek(0)
+        Clock.schedule_once(partial(self.load_image_in_main, data))
+        print('Load end')
+
+    def load_image_in_main(self, data, *args):
+        print('Load in main', args)
         core_img = CoreImage(data, ext='png')
         self.ids.img.texture = core_img.texture
+
+    def load(self, path, filenames):
+        print('Load {} {}'.format(path, filenames))
+        self.last_path = path
+        self.dismiss_popup()
+        threading.Thread(target=self.load_image, args=(filenames[0],)).start()
 
     def dismiss_popup(self):
         self._popup.dismiss()
