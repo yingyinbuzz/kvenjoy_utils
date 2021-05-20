@@ -11,7 +11,7 @@ from kivy.properties import NumericProperty, ObjectProperty, StringProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.popup import Popup
-from kivy.graphics import Color, Rectangle
+from kivy.graphics import Color, Rectangle, Translate, Scale
 from kivy.clock import mainthread
 
 class LoadDialog(FloatLayout):
@@ -22,14 +22,22 @@ class RootWidget(BoxLayout):
     threshold = NumericProperty(128)
     last_path = StringProperty(os.getcwd())
 
-    def on_threshold(self, *args):
-        print('threshold changed to {}'.format(self.threshold))
+    def draw_block(self):
         img = self.ids.img
-        size = img.texture_size
+        height = img.texture_size[1]
+        x = self.threshold * 5
+        y = self.threshold * 5
+        box_size = 50
         img.canvas.after.clear()
         with img.canvas.after:
             Color(1, 0, 0)
-            Rectangle(pos=(self.threshold * 5, size[1] - self.threshold * 5 - 100), size=(100, 100))
+            Translate(0, height)
+            Scale(1, -1, 0)
+            Rectangle(pos=(x, y), size=(box_size, box_size))
+
+    def on_threshold(self, *args):
+        print('threshold changed to {}'.format(self.threshold))
+        self.draw_block()
 
     def load_image(self, filename):
         img = Image.open(filename)
@@ -43,6 +51,7 @@ class RootWidget(BoxLayout):
         print('Load in main', args)
         core_img = CoreImage(data, ext='png')
         self.ids.img.texture = core_img.texture
+        self.draw_block()
 
     def load(self, path, filenames):
         print('Load {} {}'.format(path, filenames))
