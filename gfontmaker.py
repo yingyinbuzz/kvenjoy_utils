@@ -12,7 +12,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.popup import Popup
 from kivy.graphics import Color, Rectangle
-from kivy.clock import Clock
+from kivy.clock import mainthread
 
 class LoadDialog(FloatLayout):
     load = ObjectProperty(None)
@@ -32,14 +32,13 @@ class RootWidget(BoxLayout):
             Rectangle(pos=(self.threshold * 5, size[1] - self.threshold * 5 - 100), size=(100, 100))
 
     def load_image(self, filename):
-        print('Load begin')
         img = Image.open(filename)
         data = io.BytesIO()
         img.save(data, format='png')
         data.seek(0)
-        Clock.schedule_once(partial(self.load_image_in_main, data))
-        print('Load end')
+        self.load_image_in_main(data)
 
+    @mainthread
     def load_image_in_main(self, data, *args):
         print('Load in main', args)
         core_img = CoreImage(data, ext='png')
