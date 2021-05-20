@@ -43,8 +43,8 @@ class Stroke:
     def __init__(self, points):
         self.points = points
 
-    @staticmethod
-    def load_list(stm):
+    @classmethod
+    def load_list(cls, stm):
         """Construct list of Stroke from given input stream.
 
         For detailed layout of strokes, please see README.md.
@@ -69,7 +69,7 @@ class Stroke:
             if cmd == 0:
                 # Start a new stroke
                 if points:
-                    strokes.append(Stroke(points))
+                    strokes.append(cls(points))
                     points = []
                 points.append(Point(floats[pi], floats[pi + 1]))
                 pi += 2
@@ -85,7 +85,7 @@ class Stroke:
                 raise Exception('Unknown glyph command "0x{:02x}"'.format(cmd))
         # Append last stroke (if there's any)
         if points:
-            strokes.append(Stroke(points))
+            strokes.append(cls(points))
 
         return strokes
 

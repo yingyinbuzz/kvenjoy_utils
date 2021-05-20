@@ -200,7 +200,7 @@ class TestGFont(unittest.TestCase):
             ))
         font = Font(version, vendor, type, name, author, description, boundary, password, unknown, uuid, glyphs)
         stm = io.BytesIO()
-        Font.save(stm, font)
+        font.save(stm)
         stm.seek(0)
         font1 = Font.load(stm)
 
@@ -320,7 +320,7 @@ class TestGAP(unittest.TestCase):
         ]
         gap = Gap(version, uuid, name, author, description, variables, stroke_groups)
         stm = io.BytesIO()
-        Gap.save(stm, gap)
+        gap.save(stm)
         stm.seek(0)
         gap = Gap.load(stm)
         self.assertEqual(gap.version, version)

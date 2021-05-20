@@ -16,8 +16,8 @@ class Glyph:
         self.code = code
         self.strokes = strokes
 
-    @staticmethod
-    def load(stm):
+    @classmethod
+    def load(cls, stm):
         """Construct a Glyph from given input stream.
 
         For detailed layout of a glyph, please see README.md.
@@ -30,23 +30,21 @@ class Glyph:
         (code,) = read_short(stm)
         strokes = Stroke.load_list(stm)
 
-        return Glyph(code, strokes)
+        return cls(code, strokes)
 
-    @staticmethod
-    def save(stm, glyph):
+    def save(self, stm):
         """ Write a glyph to given stream.
 
         For detailed layout of a glyph, please see README.md.
 
         Arguments:
         stm   -- The output stream.
-        glyph -- The glyph to be written.
         """
         # Write glyph character code
-        write_short(stm, glyph.code)
+        write_short(stm, self.code)
 
         # Write glyphs
-        Stroke.save_list(stm, glyph.strokes)
+        Stroke.save_list(stm, self.strokes)
 
 class Font:
     """Represents a font.
@@ -69,8 +67,8 @@ class Font:
     # Font file encryption/decryption key
     key = bytes([1, 9, 8, 9, 0, 8, 2, 6, 1, 9, 9, 2, 0, 8, 2, 8])
 
-    @staticmethod
-    def load(stm):
+    @classmethod
+    def load(cls, stm):
         """Construct a font from given input stream.
 
         For detailed layout of a font, please see README.md.
@@ -118,53 +116,51 @@ class Font:
             glyphs.append(g)
 
         # Construct font
-        return Font(version, vendor, type, name, author, description, boundary, password, unknown, uuid, glyphs)
+        return cls(version, vendor, type, name, author, description, boundary, password, unknown, uuid, glyphs)
 
-    @staticmethod
-    def save(stm, font):
+    def save(self, stm):
         """Write a font to given input stream.
 
         For detailed layout of a font, please see README.md.
 
         Arguments:
         stm  -- The output stream.
-        font -- The font to be written.
         """
 
         # Write header
-        write_int(stm, font.version)
+        write_int(stm, self.version)
         head_stm = io.BytesIO()
-        write_utf_string(head_stm, font.vendor)
-        write_int(head_stm, font.type)
-        write_utf_string(head_stm, font.name)
-        write_utf_string(head_stm, font.author)
-        write_utf_string(head_stm, font.description)
-        write_int(head_stm, font.boundary)
-        write_int(head_stm, len(font.glyphs))
-        if font.version >= 2:
-            write_utf_string(head_stm, font.password)
-        if font.version >= 4:
-            write_raw_string(head_stm, font.unknown)
-        if font.version >= 7:
-            write_utf_string(head_stm, font.uuid)
+        write_utf_string(head_stm, self.vendor)
+        write_int(head_stm, self.type)
+        write_utf_string(head_stm, self.name)
+        write_utf_string(head_stm, self.author)
+        write_utf_string(head_stm, self.description)
+        write_int(head_stm, self.boundary)
+        write_int(head_stm, len(self.glyphs))
+        if self.version >= 2:
+            write_utf_string(head_stm, self.password)
+        if self.version >= 4:
+            write_raw_string(head_stm, self.unknown)
+        if self.version >= 7:
+            write_utf_string(head_stm, self.uuid)
         head_block = head_stm.getvalue()
-        if font.version >= 5:
+        if self.version >= 5:
             head_block = kvenjoy.cipher.encrypt(head_block, Font.key)
         write_int(stm, len(head_block))
         stm.write(head_block)
 
         # Write some non-zipped glyphs
         # TODO: Find out what exactly these non-zipped glyphs are for.
-        write_int(stm, min(30, len(font.glyphs)))
-        for g in font.glyphs:
-            Glyph.save(stm, g)
+        write_int(stm, min(30, len(self.glyphs)))
+        for g in self.glyphs:
+            g.save(stm)
 
         # Write zipped glyphs
         zstm = io.BytesIO()
         z = zipfile.ZipFile(zstm, mode='w', compression=zipfile.ZIP_DEFLATED)
-        for g in font.glyphs:
+        for g in self.glyphs:
             gstm = io.BytesIO()
-            Glyph.save(gstm, g)
+            g.save(gstm)
             z.writestr('{:d}'.format(g.code), gstm.getvalue())
         z.close()
         stm.write(zstm.getvalue())

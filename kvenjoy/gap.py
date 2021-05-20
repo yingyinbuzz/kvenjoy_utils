@@ -14,8 +14,8 @@ class Variable:
         self.y = y
         self.name = name
 
-    @staticmethod
-    def load(stm):
+    @classmethod
+    def load(cls, stm):
         """Construct a variable from given input stream.
 
         Arguments:
@@ -24,18 +24,16 @@ class Variable:
         """
         (x, y) = read_float(stm, 2)
         (name,) = read_utf_string(stm)
-        return Variable(x, y, name)
+        return cls(x, y, name)
 
-    @staticmethod
-    def save(stm, variable):
+    def save(self, stm):
         """Write a variable to given output stream.
 
         Arguments:
         stm      -- The output stream.
-        variable -- The Variable object to be written.
         """
-        write_float(stm, variable.x, variable.y)
-        write_utf_string(stm, variable.name)
+        write_float(stm, self.x, self.y)
+        write_utf_string(stm, self.name)
 
 class Gap:
     """Represent a GAP file.
@@ -81,8 +79,8 @@ class Gap:
                         y1 = py1
         return (x0, y0, x1, y1)
 
-    @staticmethod
-    def load(stm):
+    @classmethod
+    def load(cls, stm):
         """Construct a GAP object from given input stream.
 
         Arguments:
@@ -98,22 +96,21 @@ class Gap:
         (num_groups,) = read_int(zstm)
         stroke_groups = [kvenjoy.graph.Stroke.load_list(zstm) for i in range(num_groups)]
 
-        return Gap(version, uuid, name, author, description, variables, stroke_groups)
+        return cls(version, uuid, name, author, description, variables, stroke_groups)
 
-    def save(stm, gap):
+    def save(self, stm):
         """Write a GAP object to given output stream.
 
         Arguments:
         stm    -- The output stream.
-        return -- GAP object to be written input stream.
         """
         zstm = io.BytesIO()
-        write_int(zstm, gap.version)
-        write_utf_string(zstm, gap.uuid, gap.name, gap.author, gap.description)
-        write_int(zstm, len(gap.variables))
-        for v in gap.variables:
-            Variable.save(zstm, v)
-        write_int(zstm, len(gap.stroke_groups))
-        for g in gap.stroke_groups:
+        write_int(zstm, self.version)
+        write_utf_string(zstm, self.uuid, self.name, self.author, self.description)
+        write_int(zstm, len(self.variables))
+        for v in self.variables:
+            v.save(zstm)
+        write_int(zstm, len(self.stroke_groups))
+        for g in self.stroke_groups:
             kvenjoy.graph.Stroke.save_list(zstm, g)
         stm.write(gzip.compress(zstm.getvalue()))
