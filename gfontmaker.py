@@ -15,12 +15,41 @@ from kivy.graphics import Color, Rectangle, Translate, Scale
 from kivy.clock import mainthread
 
 class LoadDialog(FloatLayout):
-    load = ObjectProperty(None)
+    confirm = ObjectProperty(None)
     cancel = ObjectProperty(None)
 
 class RootWidget(BoxLayout):
     threshold = NumericProperty(128)
     last_path = StringProperty(os.getcwd())
+
+    @mainthread
+    def update_image(self, data, *args):
+        self.ids.img.texture = CoreImage(data, ext='jpeg').texture
+        self.draw_block()
+
+    def on_threshold(self, *args):
+        print('threshold changed to {}'.format(self.threshold))
+        self.draw_block()
+
+    def on_load_image_file(self, path, filenames):
+        self.last_path = path
+        self._popup.dismiss()
+        self.ids.img.texture = None
+        threading.Thread(target=self.load_image, args=(filenames[0],)).start()
+
+    def on_image_clicked(self, instance, touch):
+        if touch.is_double_tap:
+            content = LoadDialog(confirm=self.on_load_image_file, cancel=lambda *args : self._popup.dismiss())
+            content.ids.file_chooser.path = self.last_path
+            self._popup = Popup(title='Load image', content=content)
+            self._popup.open()
+
+    def load_image(self, filename):
+        img = Image.open(filename)
+        data = io.BytesIO()
+        img.save(data, format='jpeg')
+        data.seek(0)
+        self.update_image(data)
 
     def draw_block(self):
         img = self.ids.img
@@ -34,40 +63,6 @@ class RootWidget(BoxLayout):
             Translate(0, height)
             Scale(1, -1, 0)
             Rectangle(pos=(x, y), size=(box_size, box_size))
-
-    def on_threshold(self, *args):
-        print('threshold changed to {}'.format(self.threshold))
-        self.draw_block()
-
-    def load_image(self, filename):
-        img = Image.open(filename)
-        data = io.BytesIO()
-        img.save(data, format='png')
-        data.seek(0)
-        self.load_image_in_main(data)
-
-    @mainthread
-    def load_image_in_main(self, data, *args):
-        print('Load in main', args)
-        core_img = CoreImage(data, ext='png')
-        self.ids.img.texture = core_img.texture
-        self.draw_block()
-
-    def load(self, path, filenames):
-        print('Load {} {}'.format(path, filenames))
-        self.last_path = path
-        self.dismiss_popup()
-        threading.Thread(target=self.load_image, args=(filenames[0],)).start()
-
-    def dismiss_popup(self):
-        self._popup.dismiss()
-
-    def on_image_clicked(self, instance, touch):
-        if touch.is_double_tap:
-            content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
-            content.ids.file_chooser.path = self.last_path
-            self._popup = Popup(title='Load file', content=content)
-            self._popup.open()
 
 class GfontMakerApp(App):
     pass

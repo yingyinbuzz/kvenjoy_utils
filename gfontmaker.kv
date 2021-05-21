@@ -25,7 +25,7 @@ RootWidget:
         orientation: 'vertical'
         FileChooserIconView:
             id: file_chooser
-            on_submit: root.load(file_chooser.path, file_chooser.selection)
+            on_submit: root.confirm(file_chooser.path, file_chooser.selection)
         BoxLayout:
             height: 30
             size_hint_y: None
@@ -34,4 +34,4 @@ RootWidget:
                 on_release: root.cancel()
             Button:
                 text: 'Load'
-                on_release: root.load(file_chooser.path, file_chooser.selection)
+                on_release: root.confirm(file_chooser.path, file_chooser.selection)
