@@ -1,10 +1,13 @@
 RootWidget:
     orientation: 'vertical'
     GridLayout:
-        cols:2
+        cols: 2
         size_hint_y: None
         Label:
-            text: 'Threshold {:.0f}'.format(threshold.value)
+            text: 'Threshold ({:.0f})'.format(threshold.value)
+            text_size: self.size
+            halign: 'right'
+            valign: 'middle'
             size_hint_x: None
         Slider:
             id: threshold
@@ -12,6 +15,18 @@ RootWidget:
             max: 255
             value: root.threshold
             on_value: root.threshold = args[1]
+        Label:
+            text: 'Stroke threshold ({:.0f})'.format(stroke_threshold.value)
+            text_size: self.size
+            halign: 'right'
+            valign: 'middle'
+            size_hint_x: None
+        Slider:
+            id: stroke_threshold
+            min: 0
+            max: 255
+            value: root.stroke_threshold
+            on_value: root.stroke_threshold = args[1]
     ScrollView:
         Image:
             id: img
