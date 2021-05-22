@@ -21,6 +21,7 @@ class LoadDialog(FloatLayout):
 class RootWidget(BoxLayout):
     threshold = NumericProperty(128)
     last_path = StringProperty(os.getcwd())
+    image_orig = ObjectProperty(None)
 
     @mainthread
     def update_image(self, data, *args):
@@ -45,9 +46,9 @@ class RootWidget(BoxLayout):
             self._popup.open()
 
     def load_image(self, filename):
-        img = Image.open(filename)
+        self.image_orig = Image.open(filename)
         data = io.BytesIO()
-        img.save(data, format='jpeg')
+        self.image_orig.save(data, format='jpeg')
         data.seek(0)
         self.update_image(data)
 
