@@ -25,6 +25,7 @@ class RootWidget(BoxLayout):
     image_orig = ObjectProperty(None)
     green_lines = ListProperty()
     red_lines = ListProperty()
+    brown_lines = ListProperty()
 
     @mainthread
     def update_image(self, data, *args):
@@ -32,8 +33,9 @@ class RootWidget(BoxLayout):
 
         img = self.ids.img
         img.canvas.after.clear()
+        img_w, img_h = img.texture_size
         with img.canvas.after:
-            Translate(0, img.texture_size[1])
+            Translate(0, img_h)
             Scale(1, -1, 0)
             Color(0, 1, 0)
             for line in self.green_lines:
@@ -41,6 +43,11 @@ class RootWidget(BoxLayout):
             Color(1, 0, 0)
             for line in self.red_lines:
                 Line(points=line)
+            Color(0.72, 0.47, 0.34)
+            delta = 5
+            for bys in self.brown_lines:
+                Line(points=[0, bys[0] - delta, img_w - 1, bys[0] - delta])
+                Line(points=[0, bys[1] + delta, img_w - 1, bys[1] + delta])
 
     def on_threshold(self, *args):
         print('threshold changed to {}'.format(self.threshold))
@@ -92,6 +99,24 @@ class RootWidget(BoxLayout):
         self.red_lines.clear()
         for (y, c) in red_ys:
             self.red_lines.append([0, y, w - 1, y])
+
+        ys = []
+        ys.extend(y for (y, c) in green_ys)
+        ys.extend(y for (y, c) in red_ys)
+        ys = sorted(ys)
+        last_y = ys[0]
+        last_dist = None
+        brown_y = last_y
+        for y in ys[1:]:
+            dist = y - last_y
+            if last_dist is not None and dist > last_dist * 1.5:
+                self.brown_lines.append((brown_y, last_y))
+                last_dist = None
+                brown_y = y
+            last_dist = dist
+            last_y = y
+        if last_dist is not None:
+            self.brown_lines.append((brown_y, last_y))
 
 class GfontMakerApp(App):
     pass
