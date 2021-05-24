@@ -27,6 +27,18 @@ RootWidget:
             max: 255
             value: root.stroke_threshold
             on_value: root.stroke_threshold = args[1]
+        Label:
+            text: 'Glyph threshold ({:.0f})'.format(glyph_threshold.value)
+            text_size: self.size
+            halign: 'right'
+            valign: 'middle'
+            size_hint_x: None
+        Slider:
+            id: glyph_threshold
+            min: 0
+            max: 255
+            value: root.glyph_threshold
+            on_value: root.glyph_threshold = args[1]
     ScrollView:
         Image:
             id: img

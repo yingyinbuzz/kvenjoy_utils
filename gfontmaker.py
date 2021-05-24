@@ -21,16 +21,21 @@ class LoadDialog(FloatLayout):
 class RootWidget(BoxLayout):
     threshold = NumericProperty(128)
     stroke_threshold = NumericProperty(16)
+    glyph_threshold = NumericProperty(4)
     last_path = StringProperty(os.getcwd())
     image_orig = ObjectProperty(None)
     green_lines = ListProperty()
     red_lines = ListProperty()
     brown_lines = ListProperty()
+    glyph_boxes = ListProperty()
 
     @mainthread
     def update_image(self, data, *args):
         self.ids.img.texture = CoreImage(data, ext='jpeg').texture
 
+    @mainthread
+    def update_image_decorations(self):
+        print('update_image_decorations')
         img = self.ids.img
         img.canvas.after.clear()
         img_w, img_h = img.texture_size
@@ -48,9 +53,16 @@ class RootWidget(BoxLayout):
             for bys in self.brown_lines:
                 Line(points=[0, bys[0] - delta, img_w - 1, bys[0] - delta])
                 Line(points=[0, bys[1] + delta, img_w - 1, bys[1] + delta])
+            Color(1, 0, 1)
+            for (left, top, right, bottom) in self.glyph_boxes:
+                Line(points=[left, top, right, top, right, bottom, left, bottom, left, top])
 
     def on_threshold(self, *args):
-        print('threshold changed to {}'.format(self.threshold))
+        pass
+
+    def on_glyph_threshold(self, *args):
+        self.find_base_lines(self.image_orig, self.stroke_threshold)
+        self.update_image_decorations()
 
     def on_load_image_file(self, path, filenames):
         self.last_path = path
@@ -69,9 +81,10 @@ class RootWidget(BoxLayout):
         self.image_orig = Image.open(filename)
         data = io.BytesIO()
         self.image_orig.save(data, format='jpeg')
-        base_lines = self.find_base_lines(self.image_orig, self.stroke_threshold)
+        self.find_base_lines(self.image_orig, self.stroke_threshold)
         data.seek(0)
         self.update_image(data)
+        self.update_image_decorations()
 
     def add_to_y(self, ys, y, threshold):
         for i in range(len(ys)):
@@ -100,6 +113,7 @@ class RootWidget(BoxLayout):
         for (y, c) in red_ys:
             self.red_lines.append([0, y, w - 1, y])
 
+        # Mark lines with brown lines
         ys = []
         ys.extend(y for (y, c) in green_ys)
         ys.extend(y for (y, c) in red_ys)
@@ -117,6 +131,32 @@ class RootWidget(BoxLayout):
             last_y = y
         if last_dist is not None:
             self.brown_lines.append((brown_y, last_y))
+
+        # Mark characters with purple lines
+        left = None
+        right = None
+        boxes = []
+        for (y_top, y_bottom) in self.brown_lines:
+            for x in range(w):
+                has_stroke = False
+                for y in range(y_top, y_bottom + 1):
+                    r, g, b = image.getpixel((x, y))
+                    if r <= self.threshold and g <= self.threshold and b <= self.threshold:
+                        # Black pixel means stroke
+                        has_stroke = True
+                        break
+                if has_stroke:
+                    if left is None:
+                        left = x - self.glyph_threshold // 2 if x > self.glyph_threshold // 2 else x
+                    right = x
+                elif right is not None:
+                    if x - right >= self.glyph_threshold:
+                        boxes.append((left, y_top, (x + right) // 2, y_bottom))
+                        left = None
+                        right = None
+            if left is not None:
+                boxes.append((left, y_top, w, y_bottom))
+        self.glyph_boxes = boxes
 
 class GfontMakerApp(App):
     pass
