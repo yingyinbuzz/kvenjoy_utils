@@ -59,7 +59,8 @@ class RootWidget(BoxLayout):
                 Line(points=[left, top, right, top, right, bottom, left, bottom, left, top])
 
     def on_threshold(self, *args):
-        pass
+        self.find_base_lines(self.image_orig, self.stroke_threshold)
+        self.update_image_decorations()
 
     def on_glyph_threshold(self, *args):
         self.find_base_lines(self.image_orig, self.stroke_threshold)
