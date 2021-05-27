@@ -43,13 +43,13 @@ class RootWidget(BoxLayout):
         with img.canvas.after:
             Translate(0, img_h)
             Scale(1, -1, 0)
-            Color(0, 1, 0)
+            Color(0, 1, 0, 0.5)
             for line in self.green_lines:
                 Line(points=line)
-            Color(1, 0, 0)
+            Color(1, 0, 0, 0.5)
             for line in self.red_lines:
                 Line(points=line)
-            Color(0.72, 0.47, 0.34)
+            Color(0.72, 0.47, 0.34, 0.5)
             delta = 5
             for bys in self.brown_lines:
                 Line(points=[0, bys[0] - delta, img_w - 1, bys[0] - delta])
