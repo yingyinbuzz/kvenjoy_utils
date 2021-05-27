@@ -84,7 +84,7 @@ class RootWidget(BoxLayout):
         data = io.BytesIO()
         self.find_base_lines(self.image_orig, self.stroke_threshold)
         self.image_bw = self.bw_glyphs(self.image_orig)
-        self.image_orig.save(data, format='jpeg')
+        self.image_bw.save(data, format='jpeg')
         data.seek(0)
         self.update_image(data)
         self.update_image_decorations()
@@ -162,15 +162,16 @@ class RootWidget(BoxLayout):
         self.glyph_boxes = boxes
 
     def bw_glyphs(self, image):
+        oimg = Image.new('L', image.size, color=255)
         for (left, top, right, bottom) in self.glyph_boxes:
             for y in range(top, bottom):
                 for x in range(left, right):
                     r, g, b = image.getpixel((x, y))
                     if r <= self.threshold and g <= self.threshold and b <= self.threshold:
-                        image.putpixel((x, y), (0, 0, 0))
+                        oimg.putpixel((x, y), 0)
                     else:
-                        image.putpixel((x, y), (255, 255, 255))
-        return image
+                        oimg.putpixel((x, y), 255)
+        return oimg
 
 class GfontMakerApp(App):
     pass
