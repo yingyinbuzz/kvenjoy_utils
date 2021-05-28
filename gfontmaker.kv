@@ -39,6 +39,12 @@ RootWidget:
             max: 255
             value: root.glyph_threshold
             on_value: root.glyph_threshold = args[1]
+        Label:
+            text: ''
+            size_hint_x: None
+        Button:
+            text: 'Export'
+            on_press: root.on_export_glyphs()
     ScrollView:
         Image:
             id: img

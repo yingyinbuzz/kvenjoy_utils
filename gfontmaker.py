@@ -72,6 +72,16 @@ class RootWidget(BoxLayout):
         self.ids.img.texture = None
         threading.Thread(target=self.load_image, args=(filenames[0],)).start()
 
+    def on_export_glyphs(self):
+        index = 0
+        img = self.image_bw
+        for left, top, right, bottom in self.glyph_boxes:
+            fn = '{:04x}.png'.format(index)
+            print(fn)
+            gimg = img.copy().crop((left, top, right, bottom))
+            gimg.save(fn)
+            index += 1
+
     def on_image_clicked(self, instance, touch):
         if touch.is_double_tap:
             content = LoadDialog(confirm=self.on_load_image_file, cancel=lambda *args : self._popup.dismiss())
