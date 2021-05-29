@@ -75,12 +75,15 @@ class RootWidget(BoxLayout):
     def on_export_glyphs(self):
         index = 0
         img = self.image_bw
+        w = sum([right - left for left, _, right, _ in self.glyph_boxes])
+        h = max([bottom - top for _, top, _, bottom in self.glyph_boxes])
+        nimg = Image.new('L', (w, h), color=255)
+        x = 0
         for left, top, right, bottom in self.glyph_boxes:
-            fn = '{:04x}.png'.format(index)
-            print(fn)
-            gimg = img.copy().crop((left, top, right, bottom))
-            gimg.save(fn)
-            index += 1
+            nimg.paste(img.copy().crop((left, top, right, bottom)), (x, h - (bottom - top)))
+            x += (right - left)
+        nimg.save('exported.png')
+
 
     def on_image_clicked(self, instance, touch):
         if touch.is_double_tap:
