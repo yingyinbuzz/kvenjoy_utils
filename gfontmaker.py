@@ -55,7 +55,7 @@ class RootWidget(BoxLayout):
                 Line(points=[0, bys[0] - delta, img_w - 1, bys[0] - delta])
                 Line(points=[0, bys[1] + delta, img_w - 1, bys[1] + delta])
             Color(1, 0, 1)
-            for (left, top, right, bottom) in self.glyph_boxes:
+            for left, top, right, bottom in self.glyph_boxes:
                 Line(points=[left, top, right, top, right, bottom, left, bottom, left, top])
 
     def on_threshold(self, *args):
@@ -123,16 +123,16 @@ class RootWidget(BoxLayout):
                 elif g - r >= color_threshold and g - b >= color_threshold:
                     self.add_to_y(green_ys, y, stroke_threshold)
         self.green_lines.clear()
-        for (y, c) in green_ys:
+        for y, c in green_ys:
             self.green_lines.append([0, y, w - 1, y])
         self.red_lines.clear()
-        for (y, c) in red_ys:
+        for y, c in red_ys:
             self.red_lines.append([0, y, w - 1, y])
 
         # Mark lines with brown lines
         ys = []
-        ys.extend(y for (y, c) in green_ys)
-        ys.extend(y for (y, c) in red_ys)
+        ys.extend(y for y, c in green_ys)
+        ys.extend(y for y, c in red_ys)
         ys = sorted(ys)
         last_y = ys[0]
         last_dist = None
@@ -152,7 +152,7 @@ class RootWidget(BoxLayout):
         left = None
         right = None
         boxes = []
-        for (y_top, y_bottom) in self.brown_lines:
+        for y_top, y_bottom in self.brown_lines:
             for x in range(w):
                 has_stroke = False
                 for y in range(y_top, y_bottom + 1):
@@ -176,7 +176,7 @@ class RootWidget(BoxLayout):
 
     def bw_glyphs(self, image):
         oimg = Image.new('L', image.size, color=255)
-        for (left, top, right, bottom) in self.glyph_boxes:
+        for left, top, right, bottom in self.glyph_boxes:
             for y in range(top, bottom):
                 for x in range(left, right):
                     r, g, b = image.getpixel((x, y))
