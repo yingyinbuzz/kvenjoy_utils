@@ -3,6 +3,7 @@
 import sys
 from PIL import Image
 from math import sqrt
+from tracer.utils import *
 
 class IntervalTracker:
     def __init__(self):
