@@ -73,6 +73,16 @@ class TestIO(unittest.TestCase):
         kvenjoy.io.write_float(stm, 1978, 1981, 1999, 2001)
         self.assertEqual(stm.getvalue(),bytes([0x44, 0xf7, 0x40, 0x00, 0x44, 0xf7, 0xa0, 0x00, 0x44, 0xf9, 0xe0, 0x00, 0x44, 0xfa, 0x20, 0x00]))
 
+    def test_read_c_string(self):
+        stm = io.BytesIO(bytes([0x59, 0x49, 0x4e, 0x00, 0x59, 0x41, 0x4e, 0x47, 0x00]))
+        strings = kvenjoy.io.read_c_string(stm, 2)
+        self.assertEqual(strings, ('YIN', 'YANG'))
+
+    def test_write_c_string(self):
+        stm = io.BytesIO(bytearray())
+        kvenjoy.io.write_c_string(stm, 'YIN', 'YANG')
+        self.assertEqual(stm.getvalue(), bytes([0x59, 0x49, 0x4e, 0x00, 0x59, 0x41, 0x4e, 0x47, 0x00]))
+
     def test_read_utf_string(self):
         stm = io.BytesIO(bytes([0x00, 0x03, 0x59, 0x49, 0x4e, 0x00, 0x04, 0x59, 0x41, 0x4e, 0x47]))
         strings = kvenjoy.io.read_utf_string(stm, 2)

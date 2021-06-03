@@ -41,6 +41,23 @@ def read_float(stm, count = 1):
     """
     return _read(stm, '>{}f'.format(count))
 
+def read_c_string(stm, count = 1):
+    """Read NULL terminated C strings from stream.
+
+    Arguments:
+    stm   -- Input stream.
+    count -- Number of strings to be read.
+    """
+    ss = []
+    for _ in range(count):
+        bs = bytearray()
+        (b,) = read_byte(stm)
+        while b != 0:
+            bs.append(b)
+            (b,) = read_byte(stm)
+        ss.append(bs.decode('utf-8'))
+    return tuple(ss)
+
 def read_utf_string(stm, count = 1):
     """Read UTF-8 encoded string(s) from stream.
 
@@ -106,6 +123,19 @@ def write_float(stm, *args):
     *args -- Floats to be written.
     """
     _write(stm, '>{}f'.format(len(args)), *args)
+
+def write_c_string(stm, *args):
+    """Write NULL terminated string(s) to stream.
+
+    Arguments:
+    stm   -- Output stream.
+    *args -- Strings to be written.
+    """
+    bs_null = bytearray([0])
+    for s in args:
+        bs = s.encode('utf-8')
+        stm.write(bs)
+        stm.write(bs_null)
 
 def write_utf_string(stm, *args):
     """Write UTF-8 encoded string(s) to stream.
