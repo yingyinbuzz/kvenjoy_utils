@@ -5,26 +5,6 @@ from PIL import Image
 from math import sqrt
 from tracer.utils import *
 
-class IntervalTracker:
-    def __init__(self):
-        self.intervals = {}
-        self._last = None
-
-    def track_at(self, position, track):
-        if track:
-            if self._last is None:
-                self._last = position
-        else:
-            if self._last is not None:
-                x = position - self._last
-                if x < 0:
-                    raise Exception('{} {}'.format(self._last, position))
-                if x in self.intervals:
-                    self.intervals[x] += 1
-                else:
-                    self.intervals[x] = 1
-                self._last = None
-
 def is_stroke(p):
     return p < 128
 
