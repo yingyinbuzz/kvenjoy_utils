@@ -21,10 +21,10 @@ if __name__ == '__main__':
     import sys
     import os
     for fn in sys.argv[1:]:
-        print(fn)
         image = Image.open(fn)
         is_stroke = is_stroke_rgb if image.mode == 'RGB' else is_stroke_grayscale
         make_stroke_pixel = make_stroke_pixel_rgb if image.mode == 'RGB' else make_stroke_pixel_grayscale
         stroke_size = scan_stroke_size(image, is_stroke)
+        print(fn, stroke_size)
         new_image = repair_strokes(image, stroke_size, is_stroke, make_stroke_pixel)
         new_image.save('{}_repaired.png'.format(os.path.splitext(fn)[0]))

@@ -25,30 +25,13 @@ def repair_strokes(image, stroke_size, is_stroke, make_stroke):
                 new_image.putpixel((x, y), p)
             else:
                 be_stroke = False
-                if not be_stroke:
-                    hollow = 0
-                    for offset in range(-stroke_size, stroke_size):
-                        if not is_stroke(__getpixel(image, x, y + offset)):
-                            hollow += 1
-                    be_stroke = be_stroke or hollow <= stroke_size
-                if not be_stroke:
-                    hollow = 0
-                    for offset in range(-stroke_size, stroke_size):
-                        if not is_stroke(__getpixel(image, x + offset, y)):
-                            hollow += 1
-                    be_stroke = be_stroke or hollow <= stroke_size
-                if not be_stroke:
-                    hollow = 0
-                    for offset in range(-stroke_size, stroke_size):
-                        if not is_stroke(__getpixel(image, x + offset, y + offset)):
-                            hollow += 1
-                    be_stroke = be_stroke or hollow <= stroke_size
-                if not be_stroke:
-                    hollow = 0
-                    for offset in range(-stroke_size, stroke_size):
-                        if not is_stroke(__getpixel(image, x + offset, y - offset)):
-                            hollow += 1
-                    be_stroke = be_stroke or hollow <= stroke_size
+
+                stroke_count = 0
+                for yy in range(y - stroke_size, y + stroke_size):
+                    for xx in range(x - stroke_size, x + stroke_size):
+                        if is_stroke(__getpixel(image, xx, yy)):
+                            stroke_count += 1
+                be_stroke = stroke_count >= (stroke_size * stroke_size) / 2
 
                 if be_stroke:
                     new_image.putpixel((x, y), make_stroke())
