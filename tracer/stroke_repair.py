@@ -2,6 +2,14 @@
 from PIL import Image
 
 def __getpixel(image, x, y):
+    """ Get pixel from image at given (x, y) coordinate.
+    If given coordinate is out of range, returns a non-stroke pixel.
+
+    Arguments:
+    image -- The PIL image object.
+    x     -- X coordinate of the pixel.
+    y     -- Y coordinate of the pixel.
+    """
     if x >= 0 and x < image.size[0] and y >=0 and y < image.size[1]:
         return image.getpixel((x, y))
     else:
