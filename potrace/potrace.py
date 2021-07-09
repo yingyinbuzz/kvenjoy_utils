@@ -1,7 +1,7 @@
 
 def build_coord_matrix(img, stroke_checker):
     (w, h) = img.size
-    cm = [[0 for x in range(w + 4)] for y in range(h + 4)]
+    cm = [[0 for x in range(w + 3)] for y in range(h + 3)]
     img_data = img.getdata()
     (x, y) = (0, 0)
     for p in img_data:
