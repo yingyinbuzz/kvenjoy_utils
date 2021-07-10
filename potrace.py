@@ -8,6 +8,6 @@ if __name__ == '__main__':
     print('Load image')
     img = Image.open(sys.argv[1])
     print('Build matrix')
-    cm = build_coord_matrix(img, lambda p : p[0] < 128 and p[1] < 128 and p[2] < 128)
+    cm = build_coord_matrix(img, lambda p : p[0] < 192 and p[1] < 192 and p[2] < 192)
     print('Decompose paths')
     ps = decompose_paths(cm)
