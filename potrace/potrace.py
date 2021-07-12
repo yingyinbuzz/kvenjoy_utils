@@ -56,8 +56,20 @@ def find_path(cm):
     find_closed_path(cm, p)
     return p
 
-matrix_chars = {0: ' ', 1: '.', 2: '<', 3: '>', 4: '^', 5: 'v'}
+def mark_path(cm, path):
+    cmo = [[x for x in line] for line in cm]
+    for (x, y, dx, dy) in path:
+        if dx == -1:
+            cmo[y][x] = 2
+        elif dx == 1:
+            cmo[y][x] = 3
+        elif dy == -1:
+            cmo[y][x] = 4
+        elif dy == 1:
+            cmo[y][x] = 5
+    return cmo
 
+matrix_chars = {0: ' ', 1: '.', 2: '<', 3: '>', 4: '^', 5: 'v'}
 def print_matrix(cm, tag):
     print('---- {} ----'.format(tag))
     lno = 0
@@ -71,3 +83,5 @@ def print_matrix(cm, tag):
 def decompose_paths(cm):
     p = find_path(cm)
     print_matrix(cm, "Matrix")
+    cm1 = mark_path(cm, p)
+    print_matrix(cm1, "After finding path")
