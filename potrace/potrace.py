@@ -56,23 +56,50 @@ def find_path(cm):
     find_closed_path(cm, p)
     return p
 
-def mark_path(cm, path):
-    cmo = [[x for x in line] for line in cm]
+def invert_by_path(cm, path):
+    # Build scan points
+    sps = {}
     for (x, y, dx, dy) in path:
-        if dx == -1:
-            cmo[y][x] = 2
-        elif dx == 1:
-            cmo[y][x] = 3
-        elif dy == -1:
-            cmo[y][x] = 4
-        elif dy == 1:
-            cmo[y][x] = 5
+        if dy == 1 or dy == -1:
+            y = y - 1 if dy == -1 else y
+            if y in sps:
+                sps[y].append((x, y, dx, dy))
+            else:
+                sps[y] = [(x, y, dx, dy)]
+    sls = [sorted([p for p in sps[y]], key=lambda p : p[0]) for y in sorted(sps.keys())]
+    segments = []
+    for line in sls:
+        start_x = None
+        for x, y, dx, dy in line:
+            if start_x is None:
+                if dy == 1:
+                    start_x = x
+            else:
+                if dy == -1:
+                    segments.append((y, start_x, x))
+                    start_x = None
+    for y, sx, ex in segments:
+        for x in range(sx, ex):
+            cm[y][x] = 0 if cm[y][x] == 1 else 1
+
+def mark_path(cm, *paths):
+    cmo = [[x for x in line] for line in cm]
+    for path in paths:
+        for (x, y, dx, dy) in path:
+            if dx == -1:
+                cmo[y][x] = 2
+            elif dx == 1:
+                cmo[y][x] = 3
+            elif dy == -1:
+                cmo[y][x] = 4
+            elif dy == 1:
+                cmo[y][x] = 5
     return cmo
 
 matrix_chars = {0: ' ', 1: '.', 2: '<', 3: '>', 4: '^', 5: 'v'}
 def print_matrix(cm, tag):
     print('---- {} ----'.format(tag))
-    lno = 0
+    lno = -1
     for line in cm:
         lno += 1
         print('{:10}'.format(lno), end='')
@@ -81,7 +108,12 @@ def print_matrix(cm, tag):
         print()
 
 def decompose_paths(cm):
-    p = find_path(cm)
     print_matrix(cm, "Matrix")
-    cm1 = mark_path(cm, p)
-    print_matrix(cm1, "After finding path")
+    p = find_path(cm)
+    invert_by_path(cm, p)
+    print_matrix(cm, "After inverting path")
+    p2 = find_path(cm)
+    invert_by_path(cm, p2)
+    print_matrix(cm, "After inverting path again")
+    cm1 = mark_path(cm, p, p2)
+    print_matrix(cm1, "Marked paths")
