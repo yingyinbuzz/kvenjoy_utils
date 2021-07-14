@@ -24,37 +24,39 @@ def find_stroke_pixel(cm):
                 return (x, y)
     return None
 
-def find_closed_path(cm, path):
-    (x, y, dx, dy) = path[-1]
-    (x, y) = (x + dx, y + dy)
-    if (x, y) == (path[0][0], path[0][1]):
-        # Path closed
-        return
-    if cm[y - 1][x - 1] == 1 and cm[y - 1][x] == 0:
-        dx = 0
-        dy = -1
-    elif cm[y - 1][x] == 1 and cm[y][x] == 0:
-        dx = 1
-        dy = 0
-    elif cm[y][x] == 1 and cm[y][x - 1] == 0:
-        dx = 0
-        dy = 1
-    elif cm[y][x - 1] == 1 and cm[y - 1][x - 1] == 0:
-        dx = -1
-        dy = 0
-    else:
-        raise Exception('Could not route path at ({}, {})'.format(x, y))
-    path.append((x, y, dx, dy))
-    find_closed_path(cm, path)
-
 def find_path(cm):
     sp = find_stroke_pixel(cm)
     if sp is None:
         return None
     (sx, sy) = sp
-    p = [(sx, sy, 0, 1)]
-    find_closed_path(cm, p)
-    return p
+    (x, y, dx, dy) = (sx, sy, 0, 1)
+    path = []
+    point_cnt = 0
+    yx_offsets = ((-1, -1, -1,  0,  0, -1),
+                  (-1,  0,  0,  0,  1,  0),
+                  ( 0,  0,  0, -1,  0,  1),
+                  ( 0, -1, -1, -1, -1,  0))
+    offsets = ((2, 2, 2),
+               (3, 0, 1),
+               (0, 0, 0))
+    while True:
+        point_cnt += 1
+        path.append((x, y, dx, dy))
+        (x, y) = (x + dx, y + dy)
+        if (x, y) == (sx, sy):
+            break
+        found = False
+        offset = offsets[dx + 1][dy + 1]
+        for i in range(4):
+            dys, dxs, dyb, dxb, ddx, ddy = yx_offsets[(i + offset) % 4]
+            if cm[y + dys][x + dxs] == 1 and cm[y + dyb][x + dxb] == 0:
+                dx = ddx
+                dy = ddy
+                found = True
+                break
+        if not found:
+            raise Exception('Could not route path at ({}, {})'.format(x, y))
+    return path
 
 def invert_by_path(cm, path):
     # Build scan points
@@ -108,12 +110,11 @@ def print_matrix(cm, tag):
         print()
 
 def decompose_paths(cm):
-    print_matrix(cm, "Matrix")
-    p = find_path(cm)
-    invert_by_path(cm, p)
-    print_matrix(cm, "After inverting path")
-    p2 = find_path(cm)
-    invert_by_path(cm, p2)
-    print_matrix(cm, "After inverting path again")
-    cm1 = mark_path(cm, p, p2)
-    print_matrix(cm1, "Marked paths")
+    paths = []
+    while True:
+        p = find_path(cm)
+        if p is None:
+            break
+        paths.append(p)
+        invert_by_path(cm, p)
+    return paths
