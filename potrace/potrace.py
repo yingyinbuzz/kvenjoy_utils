@@ -58,7 +58,7 @@ def find_path(cm):
             raise Exception('Could not route path at ({}, {})'.format(x, y))
     return path
 
-def invert_by_path(cm, path):
+def build_scan_segments(path):
     # Build scan points
     sps = {}
     for (x, y, dx, dy) in path:
@@ -80,6 +80,10 @@ def invert_by_path(cm, path):
                 if dy == -1:
                     segments.append((y, start_x, x))
                     start_x = None
+    return segments
+
+def invert_by_path(cm, path):
+    segments = build_scan_segments(path)
     for y, sx, ex in segments:
         for x in range(sx, ex):
             cm[y][x] = 0 if cm[y][x] == 1 else 1
@@ -118,3 +122,10 @@ def decompose_paths(cm):
         paths.append(p)
         invert_by_path(cm, p)
     return paths
+
+def path_area(cm, path):
+    segments = build_scan_segments(path)
+    area = 0
+    for y, sx, ex in segments:
+        area = area + ex - sx
+    return area

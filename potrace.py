@@ -3,6 +3,22 @@
 from PIL import Image
 from potrace.potrace import *
 
+def make_dict(key_tuple, value_tuple):
+    if len(key_tuple) != len(value_tuple):
+        raise Exception('Tuple sizes not match: "{}" vs "{}"'.format(key_tuple, value_tuple))
+    o = {}
+    for i in range(len(key_tuple)):
+        o[key_tuple[i]] = value_tuple[i]
+    return o
+
+def extract_dict(key_tuple, d):
+    if len(key_tuple) != len(d):
+        raise Exception('Tuple sizes not match: "{}" vs "{}"'.format(key_tuple, d))
+    o = tuple(0 for x in range(len(key_tuple)))
+    for i in range(len(key_tuple)):
+        o[i] = d[key_tuple[i]]
+    return o
+
 if __name__ == '__main__':
     import sys
     import json
@@ -10,8 +26,15 @@ if __name__ == '__main__':
     img = Image.open(sys.argv[1])
     print('Build matrix')
     cm = build_coord_matrix(img, lambda p : p[0] < 192 and p[1] < 192 and p[2] < 192)
-    print('Decompose paths')
-    ps = decompose_paths(cm)
-    print('Total {} paths'.format(len(ps)))
-    jo = [[{'x':p[0], 'y':p[1]} for p in path] for path in ps]
-    print(json.dumps(jo, indent=4))
+
+    # print('Decompose paths')
+    # ps = decompose_paths(cm)
+    # print('Total {} paths'.format(len(ps)))
+    # jo = [[make_dict(('x', 'y', 'dx', 'dy'), p) for p in path] for path in ps]
+    # print(json.dumps(jo, indent=4))
+
+    with open(sys.argv[2]) as f:
+        paths = json.load(f)
+    for p in paths:
+        a = path_area(cm, extract_dict(('x', 'y', 'dx', 'dy'), p))
+        print(a)
