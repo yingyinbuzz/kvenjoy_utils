@@ -14,10 +14,7 @@ def make_dict(key_tuple, value_tuple):
 def extract_dict(key_tuple, d):
     if len(key_tuple) != len(d):
         raise Exception('Tuple sizes not match: "{}" vs "{}"'.format(key_tuple, d))
-    o = tuple(0 for x in range(len(key_tuple)))
-    for i in range(len(key_tuple)):
-        o[i] = d[key_tuple[i]]
-    return o
+    return tuple(d[x] for x in key_tuple)
 
 if __name__ == '__main__':
     import sys
@@ -35,6 +32,8 @@ if __name__ == '__main__':
 
     with open(sys.argv[2]) as f:
         paths = json.load(f)
+    areas = []
     for p in paths:
-        a = path_area(cm, extract_dict(('x', 'y', 'dx', 'dy'), p))
-        print(a)
+        a = path_area(cm, [extract_dict(('x', 'y', 'dx', 'dy'), point) for point in p])
+        areas.append((a, p))
+    print(json.dumps(areas, indent=4))
