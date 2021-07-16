@@ -82,8 +82,7 @@ def build_scan_segments(path):
                     start_x = None
     return segments
 
-def invert_by_path(cm, path):
-    segments = build_scan_segments(path)
+def invert_by_segments(cm, segments):
     for y, sx, ex in segments:
         for x in range(sx, ex):
             cm[y][x] = 0 if cm[y][x] == 1 else 1
@@ -113,19 +112,21 @@ def print_matrix(cm, tag):
             print(matrix_chars[x], end='')
         print()
 
-def decompose_paths(cm):
+def path_area(segments):
+    area = 0
+    for y, sx, ex in segments:
+        area = area + ex - sx
+    return area
+
+def decompose_paths(cm, min_area):
     paths = []
     while True:
         p = find_path(cm)
         if p is None:
             break
-        paths.append(p)
-        invert_by_path(cm, p)
+        segments = build_scan_segments(p)
+        invert_by_segments(cm, segments)
+        a = path_area(segments)
+        if a >= min_area:
+            paths.append(p)
     return paths
-
-def path_area(cm, path):
-    segments = build_scan_segments(path)
-    area = 0
-    for y, sx, ex in segments:
-        area = area + ex - sx
-    return area
